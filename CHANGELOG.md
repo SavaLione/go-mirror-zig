@@ -9,3 +9,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added draft working version
 - Added the project description (README.md)
 
+### Fixed
+- Fixed newline convention CRLF -> LF
