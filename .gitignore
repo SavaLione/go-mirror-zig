@@ -1,0 +1,16 @@
+# Binary
+go-mirror-zig
+
+# Visual Studio Code
+# Ignore all files in .vscode except for the team-shared settings and recommendations.
+.vscode/*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

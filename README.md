@@ -1,0 +1,56 @@
+# go-mirror-zig
+This is a simple Go application for hosting a Zig community mirror.
+
+It's **draft version**.
+The behavior of this application will change.
+
+If you still want to use this application, don't forget to change the `cmd/templates/index.html` file.
+
+Contributions are welcomed!
+
+## Building
+1. Clone the repository: `git clone https://github.com/SavaLione/go-mirror-zig.git`
+2. Navigate to the project directory: `cd go-mirror-zig`
+3. Build the project: `go build -o go-mirror-zig cmd/main.go`
+
+## Usage
+```
+Usage of go-mirror-zig:
+  -cache-dir string
+        Directory to store cache (default "./")
+  -ip string
+        IP to listen on
+  -port int
+        Port to listen on (default 8080)
+  -upstream-url string
+        Zig upstream mirror (default "https://ziglang.org")
+```
+
+An example of integration the application with Systemd:
+1. Edit the service file with preferred editor (for example nano): `nano /etc/systemd/system/go-mirror-zig.service`
+2. Add the configuration:
+    ```
+    [Unit]
+    Description=A simple Go application for hosting a Zig community mirror
+    After=network.target
+
+    [Service]
+    User=zig-mirror
+    Group=zig-mirror
+    Type=simple
+    WorkingDirectory=/zfs-pool-fast/zig-mirror
+    ExecStart=/go-mirror-zig -cache-dir=/zfs-pool-fast/zig-mirror
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+    * Don't forget to change the `WorkingDirectory` and `-cache-dir` flag
+3. Start the service: `systemctl start go-mirror-zig`
+4. Enable (make the script start after boot) it: `systemctl start go-mirror-zig`
+
+## Licenses and Acknowledgements
+This project is licensed under [The GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
+See the [LICENSE](LICENSE) file for the full license text.
+
+Copyright (C) 2025 Savelii Pototskii (savalione.com)
