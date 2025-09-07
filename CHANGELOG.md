@@ -18,6 +18,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Fixed newline convention CRLF -> LF
 - The application now correctly exits if the server fails to start.
 - Servers (http, tls, redirect) start and stop correctly
+- Files that have to be stored in the cache are downloaded safely right now.
 
 ### Changed
 - The package Flags renamed to Config.
+- Cache handler is safer.
+- Handlers log more information about requests and server tasks.

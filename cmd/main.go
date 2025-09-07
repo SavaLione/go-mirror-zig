@@ -51,9 +51,11 @@ func run() error {
 
 	// HTTP and HTTPS Handler setup
 	mux := http.NewServeMux()
+	cache := handlers.NewCache(cfg.UpstreamURL, cfg.CacheDir)
+
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
-	mux.HandleFunc("/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
-	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
+	mux.HandleFunc("/{file}", cache.Handler())
+	mux.HandleFunc("/zig/{file}", cache.Handler())
 	mainHandler := handlers.Middleware(mux)
 
 	var servers []*http.Server
