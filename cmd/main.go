@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/savalione/go-mirror-zig/handlers"
-	"github.com/savalione/go-mirror-zig/internal/flags"
+	"github.com/savalione/go-mirror-zig/internal/config"
 )
 
 //go:embed templates/*
@@ -38,15 +38,20 @@ func main() {
 		shutdownCancel()
 	}
 
-	fl := flags.NewFlags()
+	cfg, err := config.ParseConfig()
+	if err != nil {
+		slog.Error("error parsing configuration", "error", err)
+		shutdownCancel()
+		return
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
-	mux.HandleFunc("/{file}", handlers.CacheHandler(fl.UpstreamURL, fl.CacheDir))
-	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(fl.UpstreamURL, fl.CacheDir))
+	mux.HandleFunc("/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
+	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
 
 	srv := &http.Server{
-		Addr:              fl.Address(),
+		Addr:              cfg.HTTPAddress(),
 		Handler:           handlers.Middleware(mux),
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      10 * time.Second,

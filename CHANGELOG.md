@@ -9,7 +9,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added draft working version
 - Added the project description (README.md)
 - An internal package for parsing command-line flags.
+- Comments to the Config package.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF
 - The application now correctly exits if the server fails to start.
+
+### Changed
+- The package Flags renamed to Config.
