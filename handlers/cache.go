@@ -60,8 +60,14 @@ func (c *Cache) Handler() http.HandlerFunc {
 			return
 		}
 
-		// Serve the file if it is cached.
-		fileFullPath := filepath.Join(c.cacheDir, filename)
+		// Full path to the file.
+		var fileFullPath string
+		if strings.Contains(matches[1], "-dev") {
+			fileFullPath = filepath.Join(c.cacheDir, "builds", filename)
+		} else {
+			fileFullPath = filepath.Join(c.cacheDir, "download", matches[1], filename)
+		}
+
 		if fileExists(fileFullPath) {
 			serveFile(w, r, fileFullPath, logger)
 			return
@@ -119,6 +125,14 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 		sourceURL = fmt.Sprintf("%s/download/%s/%s", c.upstreamHost, version, filename)
 	}
 
+	// Where to put the file
+	var pathDestination string
+	if strings.Contains(version, "-dev") {
+		pathDestination = filepath.Join(c.cacheDir, "builds")
+	} else {
+		pathDestination = filepath.Join(c.cacheDir, "download", version)
+	}
+
 	logger = logger.With("source_url", sourceURL)
 	logger.Info("fetching file from upstream")
 
@@ -162,10 +176,16 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 	}
 	tmpFile.Close()
 
+	// Create destination directory for the file.
+	if err := os.MkdirAll(pathDestination, 0775); err != nil {
+		logger.Error("failed to create destination path for storing the cached artifact", "path_destination", pathDestination, "error", err)
+		return err
+	}
+
 	// Atomically move the file to its final destination.
-	finalPath := filepath.Join(c.cacheDir, filename)
-	if err := os.Rename(tmpFile.Name(), finalPath); err != nil {
-		logger.Error("failed to rename temporary file", "from", tmpFile.Name(), "to", finalPath, "error", err)
+	fileDestination := filepath.Join(pathDestination, filename)
+	if err := os.Rename(tmpFile.Name(), fileDestination); err != nil {
+		logger.Error("failed to rename temporary file", "from", tmpFile.Name(), "to", fileDestination, "error", err)
 		return err
 	}
 

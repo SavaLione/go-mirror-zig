@@ -56,6 +56,8 @@ func run() error {
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
 	mux.HandleFunc("/{file}", cache.Handler())
 	mux.HandleFunc("/zig/{file}", cache.Handler())
+	mux.HandleFunc("/builds/{file}", cache.Handler())
+	mux.HandleFunc("/download/", cache.Handler())
 	mainHandler := handlers.Middleware(mux)
 
 	var servers []*http.Server
