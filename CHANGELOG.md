@@ -24,3 +24,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - The package Flags renamed to Config.
 - Cache handler is safer.
 - Handlers log more information about requests and server tasks.
+- Reduced amount of logging information. Middleware and redirect handlers don't
+  log any data anymore. Added 'source' field to the cache handler's logger.

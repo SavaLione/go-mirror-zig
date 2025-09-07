@@ -47,9 +47,9 @@ func (c *Cache) Handler() http.HandlerFunc {
 
 		logger := slog.With(
 			"remote_ip", GetRemoteIP(*r),
-			"method", r.Method,
 			"path", r.URL.Path,
 			"filename", filename,
+			"source", GetSource(*r),
 		)
 
 		// Validate filename.

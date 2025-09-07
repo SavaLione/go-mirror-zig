@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
@@ -16,15 +15,6 @@ func RedirectHandler(port int) http.HandlerFunc {
 		}
 
 		targetURL := "https://" + host + ":" + strconv.Itoa(port) + r.URL.RequestURI()
-
-		slog.Info(
-			"redirecting http to https",
-			"remote_ip", GetRemoteIP(*r),
-			"method", r.Method,
-			"host", r.Host,
-			"path", r.URL.Path,
-			"target", targetURL,
-		)
 
 		http.Redirect(w, r, targetURL, http.StatusMovedPermanently)
 	}
