@@ -4,36 +4,17 @@ import (
 	"context"
 	"embed"
 	"errors"
-	"flag"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/savalione/go-mirror-zig/handlers"
+	"github.com/savalione/go-mirror-zig/internal/flags"
 )
-
-type Flags struct {
-	CacheDir    *string
-	UpstreamURL *string
-	Port        *int
-	IP          *string
-}
-
-func (f *Flags) init() {
-	f.CacheDir = flag.String("cache-dir", "./", "Directory to store cache")
-	f.UpstreamURL = flag.String("upstream-url", "https://ziglang.org", "Zig upstream mirror")
-	f.Port = flag.Int("port", 8080, "Port to listen on")
-	f.IP = flag.String("ip", "", "IP to listen on")
-}
-
-func (f Flags) address() string {
-	return *f.IP + ":" + strconv.Itoa(*f.Port)
-}
 
 //go:embed templates/*
 var content embed.FS
@@ -54,20 +35,18 @@ func main() {
 	tmpl, err := template.ParseFS(content, "templates/*.html")
 	if err != nil {
 		slog.Error("Error parsing templates", "error", err)
+		shutdownCancel()
 	}
 
-	// Flags
-	var flags Flags
-	flags.init()
-	flag.Parse()
+	fl := flags.NewFlags()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
-	mux.HandleFunc("/{file}", handlers.CacheHandler(*flags.UpstreamURL, *flags.CacheDir))
-	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(*flags.UpstreamURL, *flags.CacheDir))
+	mux.HandleFunc("/{file}", handlers.CacheHandler(fl.UpstreamURL, fl.CacheDir))
+	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(fl.UpstreamURL, fl.CacheDir))
 
 	srv := &http.Server{
-		Addr:              flags.address(),
+		Addr:              fl.Address(),
 		Handler:           handlers.Middleware(mux),
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -80,6 +59,7 @@ func main() {
 		slog.Info("Starting server")
 		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Couldn't start the server", "error", err)
+			shutdownCancel()
 		}
 	}()
 
