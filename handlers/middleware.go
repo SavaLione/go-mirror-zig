@@ -37,6 +37,7 @@ func Middleware(next http.Handler) http.Handler {
 			"status", recorder.status,
 			"duration", time.Since(start),
 			"user_agent", r.UserAgent(),
+			"source", GetSource(*r),
 		)
 	})
 }
