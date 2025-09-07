@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"embed"
 	"errors"
+	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -20,63 +23,133 @@ import (
 var content embed.FS
 
 func main() {
-	// Signals
+	if err := run(); err != nil {
+		slog.Error("server exited with an error", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("server exited gracefully")
+}
+
+func run() error {
+	// Graceful shutdown.
 	shutdownCtx, shutdownCancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer shutdownCancel()
 
-	go func() {
-		<-shutdownCtx.Done()
+	// WaitGroup to wait for all goroutines to finish.
+	var wg sync.WaitGroup
 
-		<-time.After(10 * time.Second)
-		slog.Info("Hard shutdown")
-		os.Exit(0)
-	}()
-
+	// Parsing templates that are in cmd/templates
 	tmpl, err := template.ParseFS(content, "templates/*.html")
 	if err != nil {
-		slog.Error("Error parsing templates", "error", err)
-		shutdownCancel()
+		return fmt.Errorf("error parsing templates: %w", err)
 	}
 
 	cfg, err := config.ParseConfig()
 	if err != nil {
-		slog.Error("error parsing configuration", "error", err)
-		shutdownCancel()
-		return
+		return fmt.Errorf("error parsing configuration: %w", err)
 	}
 
+	// HTTP and HTTPS Handler setup
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
 	mux.HandleFunc("/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
 	mux.HandleFunc("/zig/{file}", handlers.CacheHandler(cfg.UpstreamURL, cfg.CacheDir))
+	mainHandler := handlers.Middleware(mux)
 
-	srv := &http.Server{
-		Addr:              cfg.HTTPAddress(),
-		Handler:           handlers.Middleware(mux),
-		ReadTimeout:       5 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       120 * time.Second,
-		ReadHeaderTimeout: 5 * time.Second,
-		MaxHeaderBytes:    1 << 20,
+	var servers []*http.Server
+
+	if cfg.EnableTLS {
+		tlsConfig := &tls.Config{
+			Certificates:             []tls.Certificate{cfg.KeyPair},
+			PreferServerCipherSuites: true,
+			MinVersion:               tls.VersionTLS13,
+			CurvePreferences:         []tls.CurveID{tls.CurveP256, tls.X25519},
+		}
+
+		httpsServer := &http.Server{
+			Addr:         cfg.HTTPSAddress(),
+			Handler:      mainHandler,
+			TLSConfig:    tlsConfig,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}
+
+		servers = append(servers, httpsServer)
+	} else {
+		httpServer := &http.Server{
+			Addr:         cfg.HTTPAddress(),
+			Handler:      mainHandler,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}
+		servers = append(servers, httpServer)
+	}
+
+	if cfg.RedirectToHTTPS {
+		redirectServer := &http.Server{
+			Addr:         cfg.HTTPAddress(),
+			Handler:      handlers.RedirectHandler(cfg.TLSPort),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}
+		servers = append(servers, redirectServer)
+	}
+
+	for _, srv := range servers {
+		wg.Add(1)
+		go startServer(shutdownCtx, &wg, srv)
+	}
+
+	<-shutdownCtx.Done()
+	slog.Info("shutdown signal received. waiting for servers to close.")
+
+	wg.Wait()
+
+	// A hard shutdown failsafe
+	go func() {
+		time.Sleep(10 * time.Second)
+		slog.Warn("hard shutdown initiated")
+		os.Exit(1)
+	}()
+
+	return nil
+}
+
+func startServer(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
+	defer wg.Done()
+
+	isTLS := srv.TLSConfig != nil
+	serverType := "HTTP"
+	if isTLS {
+		serverType = "HTTPS"
 	}
 
 	go func() {
-		slog.Info("Starting server")
-		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("Couldn't start the server", "error", err)
-			shutdownCancel()
+		slog.Info(fmt.Sprintf("starting %s server", serverType), "addr", srv.Addr)
+		var err error
+		if isTLS {
+			err = srv.ListenAndServeTLS("", "")
+		} else {
+			err = srv.ListenAndServe()
+		}
+
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error(fmt.Sprintf("%s server failed to start", serverType), "addr", srv.Addr, "error", err)
 		}
 	}()
 
-	<-shutdownCtx.Done()
+	<-ctx.Done()
 
+	slog.Info(fmt.Sprintf("shutting down %s server", serverType), "addr", srv.Addr)
+
+	// A context with a timeout for the shutdown
 	shutdownTimeoutCtx, shutdownTimeoutCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownTimeoutCancel()
 
-	slog.Info("Stopping the server")
 	if err := srv.Shutdown(shutdownTimeoutCtx); err != nil {
-		slog.Error("Couldn't shutdown the server", "error", err)
+		slog.Error(fmt.Sprintf("failed to shut down %s server gracefully", serverType), "addr", srv.Addr, "error", err)
 	}
-
-	slog.Info("Server stopped")
 }
