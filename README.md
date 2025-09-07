@@ -17,13 +17,24 @@ Contributions are welcomed!
 ```
 Usage of go-mirror-zig:
   -cache-dir string
-        Directory to store cache (default "./")
-  -ip string
-        IP to listen on
-  -port int
-        Port to listen on (default 8080)
+        Path to the directory where downloaded content will be cached. (default "./")
+  -enable-tls
+        Enable the TLS (HTTPS) server. Requires -tls-cert-file and -tls-key-file.
+  -http-port int
+        The port for the plain HTTP listener. (default 80)
+  -listen-address string
+        The IP address to listen on. If empty, listens on all available interfaces.
+  -redirect-to-https
+        Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls.
+  -tls-cert-file string
+        Path to the TLS certificate file.
+  -tls-key-file string
+        Path to the TLS private key file.
+  -tls-port int
+        The port for the secure TLS (HTTPS) listener. (default 443)
   -upstream-url string
-        Zig upstream mirror (default "https://ziglang.org")
+        The URL of the upstream server to mirror/proxy. (default "https://ziglang.org")
+
 ```
 
 An example of integration the application with Systemd:
