@@ -8,6 +8,12 @@ If you still want to use this application, don't forget to change the `cmd/templ
 
 Contributions are welcomed!
 
+## Features
+* ACME challenge support (obtaining TLS certificates automatically).
+* HTTP and TLS (HTTPS) server support.
+* Automatic redirection of HTTP requests to HTTPS.
+* Choosing custom upstream.
+
 ## Building
 1. Clone the repository: `git clone https://github.com/SavaLione/go-mirror-zig.git`
 2. Navigate to the project directory: `cd go-mirror-zig`
@@ -16,6 +22,18 @@ Contributions are welcomed!
 ## Usage
 ```
 Usage of go-mirror-zig:
+  -acme
+        Obtain TLS certificates using ACME challenge.
+  -acme-accept-tos
+        Accept the ACME provider's Terms of Service.
+  -acme-cache string
+        Directory for storing obtained certificates.
+  -acme-directory string
+        ACME directory URL. (default "https://acme-v02.api.letsencrypt.org/directory")
+  -acme-email string
+        Email address for ACME registration and recovery notices.
+  -acme-host string
+        The hostname (domain name) for which to obtain the ACME certificate.
   -cache-dir string
         Path to the directory where downloaded content will be cached. (default "./")
   -enable-tls
@@ -25,7 +43,7 @@ Usage of go-mirror-zig:
   -listen-address string
         The IP address to listen on. If empty, listens on all available interfaces.
   -redirect-to-https
-        Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls.
+        Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.
   -tls-cert-file string
         Path to the TLS certificate file.
   -tls-key-file string
@@ -34,7 +52,6 @@ Usage of go-mirror-zig:
         The port for the secure TLS (HTTPS) listener. (default 443)
   -upstream-url string
         The URL of the upstream server to mirror/proxy. (default "https://ziglang.org")
-
 ```
 
 An example of integration the application with Systemd:
