@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - The server can act as a caching upstream mirror. Now it allows serving files
   on `/builds/*` and `/download/*/*` paths. Can be useful if you want to daisy
   chain server.
+- ACME challenges support.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF

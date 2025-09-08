@@ -90,7 +90,7 @@ func run() error {
 		}
 
 		acmeServer := &http.Server{
-			Addr:         cfg.ACMEAddress(),
+			Addr:         cfg.HTTPSAddress(),
 			Handler:      mainHandler,
 			TLSConfig:    acmeManager.TLSConfig(),
 			ReadTimeout:  5 * time.Second,

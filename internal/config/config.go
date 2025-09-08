@@ -123,7 +123,3 @@ func (c *Config) AcceptTOS(tosURL string) bool {
 	}
 	return c.ACMEAcceptTOS
 }
-
-func (c Config) ACMEAddress() string {
-	return net.JoinHostPort(c.ACMEHost, strconv.Itoa(c.TLSPort))
-}
