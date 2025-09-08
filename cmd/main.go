@@ -17,6 +17,7 @@ import (
 
 	"github.com/savalione/go-mirror-zig/handlers"
 	"github.com/savalione/go-mirror-zig/internal/config"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 //go:embed templates/*
@@ -80,6 +81,24 @@ func run() error {
 		}
 
 		servers = append(servers, httpsServer)
+	} else if cfg.ACME {
+		acmeManager := &autocert.Manager{
+			Cache:      autocert.DirCache(cfg.ACMECache),
+			Prompt:     cfg.AcceptTOS,
+			Email:      cfg.ACMEEmail,
+			HostPolicy: autocert.HostWhitelist(cfg.ACMEHost),
+		}
+
+		acmeServer := &http.Server{
+			Addr:         cfg.ACMEAddress(),
+			Handler:      mainHandler,
+			TLSConfig:    acmeManager.TLSConfig(),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}
+
+		servers = append(servers, acmeServer)
 	} else {
 		httpServer := &http.Server{
 			Addr:         cfg.HTTPAddress(),
