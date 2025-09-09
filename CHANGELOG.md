@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Implemented caching for official Zig download paths (`/builds/` and `/download/*/*`)
 - Added ACME support for automatic TLS certificate acquisition from Let's Encrypt.
 - Added a 'Features' section to README.md.
+- Added new sections in the readme: Getting Started, Examples, Configuration, Deployment, Contributing, Licenses and Acknowledgements.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF
@@ -31,3 +32,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Refactored logging to reduce noise and added a source field (e.g., 'cache' or 'upstream') to request logs.
 - Changed the cache directory layout to mirror the official Zig download structure (`/builds/` and `/download/*/*`).
 - Changed the appearance of the index page.
+- Changed the appearance of the readme.
+
+### Removed
+- Removed notice about the project being a draft.
