@@ -49,7 +49,7 @@ func ParseConfig() (Config, error) {
 	flag.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
 	flag.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
 
-	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using ACME challenge.")
+	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")
 	flag.BoolVar(&c.ACMEAcceptTOS, "acme-accept-tos", false, "Accept the ACME provider's Terms of Service.")
 	flag.StringVar(&c.ACMECache, "acme-cache", "", "Directory for storing obtained certificates.")

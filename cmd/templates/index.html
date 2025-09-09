@@ -2,15 +2,30 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Zig community mirror</title>
+
+        <link rel="stylesheet" href="/assets/inter.css">
+        <link rel="stylesheet" href="/assets/new.css">
+        <link rel="icon" type="image/png" href="/assets/favicon.png">
     </head>
     <body>
-        <h1>Zig community mirror</h1>
-        <p>See <a href="https://ziglang.org/download/community-mirrors/">ziglang.org/download/community-mirrors/</a> for more information.</p>
-        <p>The mirror is powered by a custom Go implementation.</p>
-        <p>I plan to release the implementation and a guide on how to host a Zig mirror in the future.</p>
-        <p></p>
-        <p>I have tested several files and everything appears to be working correctly.</p>
-        <p>If you encounter any issues, please contact me at savelii.pototskii@gmail.com, and I will address them as quickly as possible.</p>
+        <header>
+            <h1>Zig Community Mirror</h1>
+        </header>
+
+        <p>This is a community-hosted mirror for the Zig programming language, designed to provide faster, local access to Zig downloads.</p>
+        <p>For a complete list of official and community mirrors, please visit the official Zig website: <a href="https://ziglang.org/download/community-mirrors/">ziglang.org/download/community-mirrors/</a>.</p>
+
+        <h2>Mirror Status</h2>
+        <p>This mirror is operational. Files are served from a local cache. If a requested file is not in the cache, it will be automatically and securely downloaded from the official upstream source and cached for future requests.</p>
+        
+        <h2>About the Software</h2>
+        <p>This mirror is powered by <a href="https://github.com/savalione/go-mirror-zig/">go-mirror-zig</a>, a custom, open-source server implementation written in Go.</p>
+
+        <h2>Support and Issue Reporting</h2>
+        <p>If you encounter any issues with this mirror, such as slow downloads or failed requests, please report them to the mirror's maintainer. The maintainer's contact information is available at <a href="https://github.com/ziglang/www.ziglang.org/blob/main/assets/community-mirrors.ziggy">github.com/ziglang/www.ziglang.org/assets/community-mirrors.ziggy</a></p>
+
+        <p>If you encounter any odd behavior related to the caching server software, such as incorrect checksums, wrong status codes, or other unexpected behavior, please report them by opening an issue on the project's GitHub repository: <a href="https://github.com/savalione/go-mirror-zig/issues">github.com/savalione/go-mirror-zig/issues</a></p>
     </body>
 </html>

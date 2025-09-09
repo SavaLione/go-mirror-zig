@@ -23,6 +23,9 @@ import (
 //go:embed templates/*
 var content embed.FS
 
+//go:embed assets/*
+var assets embed.FS
+
 func main() {
 	if err := run(); err != nil {
 		slog.Error("server exited with an error", "error", err)
@@ -55,6 +58,7 @@ func run() error {
 	cache := handlers.NewCache(cfg.UpstreamURL, cfg.CacheDir)
 
 	mux.HandleFunc("/", handlers.RootHandler(tmpl))
+	mux.Handle("/assets/", http.FileServer(http.FS(assets)))
 	mux.HandleFunc("/{file}", cache.Handler())
 	mux.HandleFunc("/zig/{file}", cache.Handler())
 	mux.HandleFunc("/builds/{file}", cache.Handler())
