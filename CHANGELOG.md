@@ -6,32 +6,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
-- Added draft working version
-- Added the project description (README.md)
-- An internal package for parsing command-line flags.
+- Initial project structure and basic mirroring functionality.
+- Added README.md with project description and usage instructions.
+- Added an internal package for parsing command-line flags.
 - Comments to the Config package.
-- Now it is possible to start a secure server (TLS, HTTPS).
-- New config parameters that are responsible for HTTP/HTTPS ports, TLS cert/key files, redirect behavior.
-- Ability to redirect incoming requests from http-port (default 80) to tls-port (default 443).
-- The server can act as a caching upstream mirror. Now it allows serving files
-  on `/builds/*` and `/download/*/*` paths. Can be useful if you want to daisy
-  chain server.
-- ACME challenges support.
-- Features section in readme.
+- Added support for serving content over HTTPS (TLS).
+- Added command-line flags for configuring ports, TLS certificates, and HTTP-to-HTTPS redirection.
+- Added optional redirection of all HTTP traffic to HTTPS.
+- Implemented caching for official Zig download paths (`/builds/` and `/download/*/*`)
+- Added ACME support for automatic TLS certificate acquisition from Let's Encrypt.
+- Added a 'Features' section to README.md.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF
 - The application now correctly exits if the server fails to start.
-- Servers (http, tls, redirect) start and stop correctly
-- Files that have to be stored in the cache are downloaded safely right now.
+- Improved server lifecycle management for graceful startup and shutdown.
+- Ensured atomic writes to the cache to prevent serving partially downloaded files.
+- Fixed grammar in the changelog.
 
 ### Changed
-- The package Flags renamed to Config.
-- Cache handler is safer.
+- Renamed the internal `flags` package to `config` for clarity.
+- Improved error handling and robustness of the cache handler.
 - Handlers log more information about requests and server tasks.
-- Reduced amount of logging information. Middleware and redirect handlers don't
-  log any data anymore. Added 'source' field to the cache handler's logger.
-- Cache directory layout for cached files. Previously all files were put in a
-  root cache directory (that is set by `--cache-dir` flag), but now they follow
-  the official Zig download layout. Dev builds are now stored in `/builds/` and
-  release builds are stored in `/downloads/*/`.
+- Refactored logging to reduce noise and added a source field (e.g., 'cache' or 'upstream') to request logs.
+- Changed the cache directory layout to mirror the official Zig download structure (`/builds/` and `/download/*/*`).
