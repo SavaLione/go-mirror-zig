@@ -15,6 +15,19 @@ It is lightweight and distributed as a single binary.
 * Path correctness: Caches files using the official Zig directory layout (`/download/<version>/` and `/builds/`).
 
 ## Getting Started
+### From a Precompiled Binary
+This is the recommended method for most users.
+1.  Navigate to the [latest release page](https://github.com/savalione/go-mirror-zig/releases/latest).
+2.  Download the archive for your operating system and architecture (e.g., `go-mirror-zig-v1.0.0-linux-amd64.tar.gz`).
+3.  Extract the archive.
+    ```sh
+    tar -xvzf go-mirror-zig-v1.0.0-linux-amd64.tar.gz
+    ```
+4.  Run the application. You can verify it's working by checking the version or help output.
+    ```sh
+    ./go-mirror-zig --version
+    ```
+
 ### From source
 Ensure you have a recent version of Go installed.
 1.  Clone the repository:

@@ -19,6 +19,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added new sections in the readme: Getting Started, Examples, Configuration, Deployment, Contributing, Licenses and Acknowledgements.
 - Added version information flag support, updated readme.
 - Added a make script for building the application.
+- Added a build script for cross-compiling releases.
+- Compiled releases are not tracked by git.
+- Added 'From a Precompiled Binary' section in readme.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF
