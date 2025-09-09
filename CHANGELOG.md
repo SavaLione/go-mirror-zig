@@ -30,3 +30,4 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Handlers log more information about requests and server tasks.
 - Refactored logging to reduce noise and added a source field (e.g., 'cache' or 'upstream') to request logs.
 - Changed the cache directory layout to mirror the official Zig download structure (`/builds/` and `/download/*/*`).
+- Changed the appearance of the index page.
