@@ -1,5 +1,6 @@
 # Binary
 go-mirror-zig
+build/release
 
 # Visual Studio Code
 # Ignore all files in .vscode except for the team-shared settings and recommendations.
