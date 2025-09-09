@@ -20,6 +20,10 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+// MUST BE SET by go build -ldflags "-X main.version=999"
+// git describe --tags --always --dirty
+var version string // do not remove or modify
+
 //go:embed templates/*
 var content embed.FS
 
@@ -51,6 +55,15 @@ func run() error {
 	cfg, err := config.ParseConfig()
 	if err != nil {
 		return fmt.Errorf("error parsing configuration: %w", err)
+	}
+
+	if cfg.ShowVersion {
+		if version != "" {
+			print(version)
+		} else {
+			print("unknown")
+		}
+		os.Exit(0)
 	}
 
 	// HTTP and HTTPS Handler setup

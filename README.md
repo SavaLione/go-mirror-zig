@@ -107,6 +107,7 @@ Run `./go-mirror-zig -help` to see all available options.
 |`-tls-key-file string`  |Path to the TLS private key file.                                                         |                     |
 |`-tls-port int`         |The port for the secure TLS (HTTPS) listener.                                             |`443`                |
 |`-upstream-url string`  |The URL of the upstream server to mirror/proxy.                                           |`https://ziglang.org`|
+|`-version`              |Print version information and exit.                                                       |                     |
 
 ## Deployment
 ### Using systemd

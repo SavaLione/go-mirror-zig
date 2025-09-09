@@ -9,6 +9,9 @@ import (
 	"strconv"
 )
 
+// MUST BE SET by go build -ldflags "-X main.version=999"
+var version string // git describe --tags --always --dirty
+
 // Config holds configuration values, populated from command-line flags.
 type Config struct {
 	CacheDir        string
@@ -18,6 +21,7 @@ type Config struct {
 	ListenAddress   string
 	EnableTLS       bool
 	RedirectToHTTPS bool
+	ShowVersion     bool
 
 	ACME          bool
 	ACMEDirectory string
@@ -48,6 +52,7 @@ func ParseConfig() (Config, error) {
 	flag.StringVar(&c.tlsCertFile, "tls-cert-file", "", "Path to the TLS certificate file.")
 	flag.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
 	flag.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
+	flag.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
 
 	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")

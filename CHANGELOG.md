@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added ACME support for automatic TLS certificate acquisition from Let's Encrypt.
 - Added a 'Features' section to README.md.
 - Added new sections in the readme: Getting Started, Examples, Configuration, Deployment, Contributing, Licenses and Acknowledgements.
+- Added version information flag support, updated readme.
+- Added a make script for building the application.
 
 ### Fixed
 - Fixed newline convention CRLF -> LF
