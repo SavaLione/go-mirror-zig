@@ -76,9 +76,10 @@ func run() error {
 		} else {
 			mux.Handle("/", http.FileServer(http.Dir(cfg.IndexPage)))
 		}
+
+		mux.Handle("/assets/", http.FileServer(http.FS(assets)))
 	}
 
-	mux.Handle("/assets/", http.FileServer(http.FS(assets)))
 	mux.HandleFunc("/{file}", cache.Handler())
 	mux.HandleFunc("/zig/{file}", cache.Handler())
 	mux.HandleFunc("/builds/{file}", cache.Handler())
