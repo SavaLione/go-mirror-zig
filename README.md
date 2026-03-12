@@ -13,6 +13,7 @@ It is lightweight and distributed as a single binary.
 * Standalone binary: Compiles to a single, dependency-free binary for easy deployment.
 * Configurable: All settings are manageable via command-line flags, including ports, cache directories, and upstream URL.
 * Path correctness: Caches files using the official Zig directory layout (`/download/<version>/` and `/builds/`).
+* Customizable index page: Serve a custom landing page or static directory at the root, with option to completely disable the default index.
 
 ## Getting Started
 ### From a Precompiled Binary
@@ -103,24 +104,26 @@ go-mirror-zig -acme -acme-accept-tos -acme-cache /secure-location -acme-email us
 The application is configured using command-line flags.
 Run `./go-mirror-zig -help` to see all available options.
 
-|Flag                    |Description                                                                               |Default value        |
-|:-----------------------|:-----------------------------------------------------------------------------------------|:--------------------|
-|`-acme`                 |Obtain TLS certificates using the ACME challenge.                                         |                     |
-|`-acme-accept-tos`      |Accept the ACME provider's Terms of Service.                                              |                     |
-|`-acme-cache string`    |Directory for storing obtained certificates.                                              |                     |
-|`-acme-directory string`|ACME directory URL.                                                                       |`https://acme-v02.api.letsencrypt.org/directory`|
-|`-acme-email string`    |Email address for ACME registration and recovery notices.                                 |                     |
-|`-acme-host string`     |The hostname (domain name) for which to obtain the ACME certificate.                      |                     |
-|`-cache-dir string`     |Path to the directory where downloaded content will be cached.                            |`./`                 |
-|`-enable-tls`           |Enable the TLS (HTTPS) server. Requires `-tls-cert-file` and `-tls-key-file`.             |                     |
-|`-http-port int`        |The port for the plain HTTP listener.                                                     |`80`                 |
-|`-listen-address string`|The IP address to listen on. If empty, listens on all available interfaces.               |                     |
-|`-redirect-to-https`    |Enable automatic redirection of HTTP requests to HTTPS. Requires `-enable-tls` or `-acme`.|                     |
-|`-tls-cert-file string` |Path to the TLS certificate file.                                                         |                     |
-|`-tls-key-file string`  |Path to the TLS private key file.                                                         |                     |
-|`-tls-port int`         |The port for the secure TLS (HTTPS) listener.                                             |`443`                |
-|`-upstream-url string`  |The URL of the upstream server to mirror/proxy.                                           |`https://ziglang.org`|
-|`-version`              |Print version information and exit.                                                       |                     |
+|Flag                    |Description                                                                                   |Default value        |
+|:-----------------------|:---------------------------------------------------------------------------------------------|:--------------------|
+|`-acme`                 |Obtain TLS certificates using the ACME challenge.                                             |                     |
+|`-acme-accept-tos`      |Accept the ACME provider's Terms of Service.                                                  |                     |
+|`-acme-cache string`    |Directory for storing obtained certificates.                                                  |                     |
+|`-acme-directory string`|ACME directory URL.                                                                           |`https://acme-v02.api.letsencrypt.org/directory`|
+|`-acme-email string`    |Email address for ACME registration and recovery notices.                                     |                     |
+|`-acme-host string`     |The hostname (domain name) for which to obtain the ACME certificate.                          |                     |
+|`-cache-dir string`     |Path to the directory where downloaded content will be cached.                                |`./`                 |
+|`-enable-tls`           |Enable the TLS (HTTPS) server. Requires `-tls-cert-file` and `-tls-key-file`.                 |                     |
+|`-http-port int`        |The port for the plain HTTP listener.                                                         |`80`                 |
+|`-listen-address string`|The IP address to listen on. If empty, listens on all available interfaces.                   |                     |
+|`-redirect-to-https`    |Enable automatic redirection of HTTP requests to HTTPS. Requires `-enable-tls` or `-acme`.    |                     |
+|`-tls-cert-file string` |Path to the TLS certificate file.                                                             |                     |
+|`-tls-key-file string`  |Path to the TLS private key file.                                                             |                     |
+|`-tls-port int`         |The port for the secure TLS (HTTPS) listener.                                                 |`443`                |
+|`-upstream-url string`  |The URL of the upstream server to mirror/proxy.                                               |`https://ziglang.org`|
+|`-version`              |Print version information and exit.                                                           |                     |
+|`-show-index-page bool` |Whether to serve a custom index page at the root (/). Set to false to disable.                |`true`               |
+|`-index-page string`    |Path to a directory containing static files for the index. If empty, the default page is used.|built-in index page  |
 
 ## Deployment
 ### Using systemd
