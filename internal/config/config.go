@@ -22,6 +22,8 @@ type Config struct {
 	EnableTLS       bool
 	RedirectToHTTPS bool
 	ShowVersion     bool
+	ShowIndexPage   bool
+	IndexPage       string
 
 	ACME          bool
 	ACMEDirectory string
@@ -53,6 +55,8 @@ func ParseConfig() (Config, error) {
 	flag.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
 	flag.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
 	flag.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
+	flag.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
+	flag.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
 
 	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")

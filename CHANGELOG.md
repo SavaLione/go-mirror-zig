@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added `-show-index-page` and `-index-page` flags to allow users to customize or disable the root index page.
+
 ### Security
 - Updated `golang.org/x/crypto` library (`v0.41.0` -> `v0.49.0`) (thanks dependabot for that)
 

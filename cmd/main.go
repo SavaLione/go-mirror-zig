@@ -70,8 +70,16 @@ func run() error {
 	mux := http.NewServeMux()
 	cache := handlers.NewCache(cfg.UpstreamURL, cfg.CacheDir)
 
-	mux.HandleFunc("/", handlers.RootHandler(tmpl))
-	mux.Handle("/assets/", http.FileServer(http.FS(assets)))
+	if cfg.ShowIndexPage {
+		if cfg.IndexPage == "" {
+			mux.HandleFunc("/", handlers.RootHandler(tmpl))
+		} else {
+			mux.Handle("/", http.FileServer(http.Dir(cfg.IndexPage)))
+		}
+
+		mux.Handle("/assets/", http.FileServer(http.FS(assets)))
+	}
+
 	mux.HandleFunc("/{file}", cache.Handler())
 	mux.HandleFunc("/zig/{file}", cache.Handler())
 	mux.HandleFunc("/builds/{file}", cache.Handler())
