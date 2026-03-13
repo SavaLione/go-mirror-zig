@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 ### Added
 - Added `-show-index-page` and `-index-page` flags to allow users to customize or disable the root index page.
+- Added `-clear-builds-interval` flag to automatically clean up stale Zig development artifacts from the cache.
+- Added background task to periodically remove cached dev builds based on the configured interval.
+- Added a new `zig` internal package to centralize artifact validation and parsing logic.
 
 ### Security
 - Updated `golang.org/x/crypto` library (`v0.41.0` -> `v0.49.0`) (thanks dependabot for that)

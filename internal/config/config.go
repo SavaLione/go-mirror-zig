@@ -24,6 +24,7 @@ type Config struct {
 	ShowVersion     bool
 	ShowIndexPage   bool
 	IndexPage       string
+	ClearBuilds     int
 
 	ACME          bool
 	ACMEDirectory string
@@ -57,6 +58,7 @@ func ParseConfig() (Config, error) {
 	flag.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
 	flag.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
 	flag.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
+	flag.IntVar(&c.ClearBuilds, "clear-builds-interval", 86400, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
 
 	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")
@@ -111,6 +113,10 @@ func ParseConfig() (Config, error) {
 		if c.EnableTLS {
 			return c, errors.New("manual TLS settings (-tls-cert-file, -tls-key-file) cannot be used with ACME")
 		}
+	}
+
+	if c.ClearBuilds < 0 {
+		return c, errors.New("the -clear-builds-interval flag can't be negative")
 	}
 
 	return c, nil
