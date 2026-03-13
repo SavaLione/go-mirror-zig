@@ -14,6 +14,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Security
 - Updated `golang.org/x/crypto` library (`v0.41.0` -> `v0.49.0`) (thanks dependabot for that)
 
+### Fixed
+- Fixed minimal required Go version in the README.md.
+
 ### Changed
 - Changed project's Go version (`1.25.0` -> `1.26.1`)
 
