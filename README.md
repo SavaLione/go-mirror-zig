@@ -1,5 +1,5 @@
 # Go Mirror Zig
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Go Report Card](https://goreportcard.com/badge/github.com/savalione/go-mirror-zig)](https://goreportcard.com/report/github.com/savalione/go-mirror-zig) ![Go Version](https://img.shields.io/badge/go-1.25+-blue.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/savalione/go-mirror-zig) ![GitHub issues](https://img.shields.io/github/issues/savalione/go-mirror-zig)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Go Report Card](https://goreportcard.com/badge/github.com/savalione/go-mirror-zig)](https://goreportcard.com/report/github.com/savalione/go-mirror-zig) ![Go Version](https://img.shields.io/badge/go-1.26+-blue.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/savalione/go-mirror-zig) ![GitHub issues](https://img.shields.io/github/issues/savalione/go-mirror-zig)
 
 A self-hostable solution written in Go for creating a community mirror for the Zig programming language.
 This application is designed for communities, companies, or individuals looking to provide faster local access to Zig toolchains, reducing latency and bandwidth usage on the official servers.
