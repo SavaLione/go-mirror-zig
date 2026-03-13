@@ -112,7 +112,7 @@ func run() error {
 
 	if cfg.ShowIndexPage {
 		if cfg.IndexPage == "" {
-			mux.HandleFunc("/", handlers.RootHandler(tmpl))
+			mux.HandleFunc("/", handlers.RootHandler(tmpl, version))
 		} else {
 			mux.Handle("/", http.FileServer(http.Dir(cfg.IndexPage)))
 		}
