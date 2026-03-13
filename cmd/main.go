@@ -11,12 +11,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/savalione/go-mirror-zig/handlers"
 	"github.com/savalione/go-mirror-zig/internal/config"
+	"github.com/savalione/go-mirror-zig/internal/zig"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -64,6 +66,44 @@ func run() error {
 			print("unknown")
 		}
 		os.Exit(0)
+	}
+
+	// A background task to clear zig build artifacts
+	if cfg.ClearBuilds != 0 {
+		clearBuildsTicker := time.NewTicker(time.Duration(cfg.ClearBuilds) * time.Second)
+		defer clearBuildsTicker.Stop()
+
+		go func() {
+			for {
+				select {
+				case <-shutdownCtx.Done():
+					return
+				case <-clearBuildsTicker.C:
+					buildPath := filepath.Join(cfg.CacheDir, "/builds/")
+					buildFiles, err := os.ReadDir(buildPath)
+					if err != nil {
+						slog.Error("failed to scan cache directory for cleanup", "path", buildPath, "error", err)
+						continue
+					}
+
+					for _, file := range buildFiles {
+						// Skip empty directories
+						if file.IsDir() {
+							continue
+						}
+
+						if zig.IsZigArtifact(file.Name()) {
+							filePath := filepath.Join(buildPath, file.Name())
+							if err := os.Remove(filePath); err != nil {
+								slog.Error("failed to remove a stale zig artifact", "path", filePath, "error", err)
+							} else {
+								slog.Info("a stale zig artifact removed", "path", filePath)
+							}
+						}
+					}
+				}
+			}
+		}()
 	}
 
 	// HTTP and HTTPS Handler setup

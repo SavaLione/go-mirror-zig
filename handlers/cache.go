@@ -9,13 +9,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
-)
 
-var filenameRegex = regexp.MustCompile(`^zig(?:|-bootstrap|-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+)-(\d+\.\d+\.\d+(?:-dev\.\d+\+[0-9a-f]+)?)\.(?:tar\.xz|zip)(?:\.minisig)?$`)
+	"github.com/savalione/go-mirror-zig/internal/zig"
+)
 
 // Cache holds the dependencies for the cache handler, making it more testable and organized.
 type Cache struct {
@@ -53,19 +52,20 @@ func (c *Cache) Handler() http.HandlerFunc {
 		)
 
 		// Validate filename.
-		matches := filenameRegex.FindStringSubmatch(filename)
-		if len(matches) < 2 {
+		if !zig.IsZigArtifact(filename) {
 			logger.Warn("invalid filename format")
 			http.Error(w, "Invalid filename format", http.StatusBadRequest)
 			return
 		}
 
+		zigSubmatches := zig.ArtifactSubmatches(filename)
+
 		// Full path to the file.
 		var fileFullPath string
-		if strings.Contains(matches[1], "-dev") {
+		if strings.Contains(zigSubmatches[1], "-dev") {
 			fileFullPath = filepath.Join(c.cacheDir, "builds", filename)
 		} else {
-			fileFullPath = filepath.Join(c.cacheDir, "download", matches[1], filename)
+			fileFullPath = filepath.Join(c.cacheDir, "download", zigSubmatches[1], filename)
 		}
 
 		if fileExists(fileFullPath) {
@@ -94,7 +94,7 @@ func (c *Cache) Handler() http.HandlerFunc {
 
 		// Fetch from upstream
 		logger.Info("file not in cache, starting download")
-		if err := c.fetchAndCacheFile(r.Context(), logger, filename, matches[1]); err != nil {
+		if err := c.fetchAndCacheFile(r.Context(), logger, filename, zigSubmatches[1]); err != nil {
 			if errors.Is(err, errUpstreamNotFound) {
 				http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			} else if errors.Is(err, errUpstreamUnavailable) {
