@@ -124,40 +124,91 @@ Run `./go-mirror-zig -help` to see all available options.
 |`-version`              |Print version information and exit.                                                           |                     |
 |`-show-index-page bool` |Whether to serve a custom index page at the root (/). Set to false to disable.                |`true`               |
 |`-index-page string`    |Path to a directory containing static files for the index. If empty, the default page is used.|built-in index page  |
-|`-clear-builds-interval`|Interval in seconds to clean up cached dev builds. Set to 0 to disable.                       |`86400`              |
+|`-clear-builds-interval`|Interval in seconds to clean up cached dev builds. Set to 0 to disable.                       |`345600`             |
 
 ## Deployment
-### Using systemd
-Here is an example service file for running the application with systemd.
+### Using systemd and nginx as a reverse proxy
+Here is an example service file for running the application with systemd and nginx as a reverse proxy.
+1. Create the service file:
+    ```sh
+    sudo nano /etc/systemd/system/go-mirror-zig.service
+    ```
+2. Add the following configuration, adjusting paths and flags as needed:
+    ```ini
+    [Unit]
+    Description=Go Mirror Zig Service
+    After=network.target
+
+    [Service]
+    User=zig-mirror
+    Group=zig-mirror
+    Type=simple
+    WorkingDirectory=/opt/zig-mirror
+    ExecStart=/go-mirror-zig -http-port=8888 -cache-dir=/zig-mirror
+    Restart=on-failure
+    RestartSec=5s
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+3. Create nginx virtual host
+    ```
+    server {
+        server_name zig.example.com;
+
+        listen 80;
+        listen [::]:80;
+
+        location / {
+            proxy_pass http://127.0.0.1:8888;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Protocol $scheme;
+            proxy_set_header X-Forwarded-Host $http_host;
+        }
+    }
+    ```
+4. Enable and start go-mirror-zig, reload nginx:
+    ```sh
+    sudo systemctl daemon-reload
+    sudo systemctl enable go-mirror-zig.service
+    sudo systemctl start go-mirror-zig.service
+    sudo systemctl reload nginx
+    ```
+
+### Using systemd and ACME challenge
+Here is an example service file for running the application with systemd and ACME challenge.
 
 1. Create the service file:
       ```sh
       sudo nano /etc/systemd/system/go-mirror-zig.service
       ```
 2. Add the following configuration, adjusting paths and flags as needed:
-      ```ini
-      [Unit]
-      Description=Go Mirror Zig Service
-      After=network.target
+    ```ini
+    [Unit]
+    Description=Go Mirror Zig Service
+    After=network.target
 
-      [Service]
-      User=zig-mirror
-      Group=zig-mirror
-      Type=simple
-      WorkingDirectory=/opt/zig-mirror
-      ExecStart=/go-mirror-zig -cache-dir=/zig-mirror -acme -acme-accept-tos -acme-host=zig.example.com -acme-email=admin@example.com -acme-cache=/var/lib/zig-mirror/acme -redirect-to-https
-      Restart=on-failure
-      RestartSec=5s
+    [Service]
+    User=zig-mirror
+    Group=zig-mirror
+    Type=simple
+    WorkingDirectory=/opt/zig-mirror
+    ExecStart=/go-mirror-zig -cache-dir=/zig-mirror -acme -acme-accept-tos -acme-host=zig.example.com -acme-email=admin@example.com -acme-cache=/var/lib/zig-mirror/acme -redirect-to-https
+    Restart=on-failure
+    RestartSec=5s
 
-      [Install]
-      WantedBy=multi-user.target
-      ```
+    [Install]
+    WantedBy=multi-user.target
+    ```
 3. Reload, enable, and start the service:
-      ```sh
-      sudo systemctl daemon-reload
-      sudo systemctl enable go-mirror-zig.service
-      sudo systemctl start go-mirror-zig.service
-      ```
+    ```sh
+    sudo systemctl daemon-reload
+    sudo systemctl enable go-mirror-zig.service
+    sudo systemctl start go-mirror-zig.service
+    ```
 
 ## Contributing
 Contributions are welcome!
