@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Added tests for the index handler
+- Added tests for the middleware handler
+- Added tests for the redirect handler
+- Added tests for the configuration parser
+- Added tests for the zig internal functions (`internal/zig/zig.go`)
+
+### Fixed
+- Fixed weird behavior of temporary files (windows and unix handle them differently). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
+- Added a message indicating that the ToS are not accepted
+
+### Changed
+- Increased the interval in seconds to clean up cached dev builds (from 1 day to 4 days)
+- The HTTP to HTTPS redirect now omits the `443` port if it's not required
+
 ## [1.1.0] - 2026-03-14
 ### Added
 - Added `-show-index-page` and `-index-page` flags to allow users to customize or disable the root index page.

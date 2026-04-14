@@ -164,17 +164,26 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 		logger.Error("failed to create temporary file", "error", err)
 		return err
 	}
-	defer func() {
-		// tmpFile.Close()
-		os.Remove(tmpFile.Name())
-	}()
 
 	// Stream the download to the temp file.
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+		if err := tmpFile.Close(); err != nil {
+			logger.Error("failed to close the temporary file", "temp_file", tmpFile.Name(), "error", err)
+		}
+
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			logger.Error("failed to remove the temporary file", "temp_file", tmpFile.Name(), "error", err)
+		}
+
 		logger.Error("failed to write to temporary file", "temp_file", tmpFile.Name(), "error", err)
 		return err
 	}
-	tmpFile.Close()
+
+	// See: https://pkg.go.dev/os#example-CreateTemp-Suffix
+	// Also: On Linux it is allowed to delete an opened file, while on Windows it is not allowed
+	if err := tmpFile.Close(); err != nil {
+		logger.Error("failed to close the temporary file", "temp_file", tmpFile.Name(), "error", err)
+	}
 
 	// Create destination directory for the file.
 	if err := os.MkdirAll(pathDestination, 0775); err != nil {
@@ -185,6 +194,10 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 	// Atomically move the file to its final destination.
 	fileDestination := filepath.Join(pathDestination, filename)
 	if err := os.Rename(tmpFile.Name(), fileDestination); err != nil {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			logger.Error("failed to remove the temporary file", "temp_file", tmpFile.Name(), "error", err)
+		}
+
 		logger.Error("failed to rename temporary file", "from", tmpFile.Name(), "to", fileDestination, "error", err)
 		return err
 	}

@@ -9,9 +9,6 @@ import (
 	"strconv"
 )
 
-// MUST BE SET by go build -ldflags "-X main.version=999"
-var version string // git describe --tags --always --dirty
-
 // Config holds configuration values, populated from command-line flags.
 type Config struct {
 	CacheDir        string
@@ -58,7 +55,7 @@ func ParseConfig() (Config, error) {
 	flag.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
 	flag.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
 	flag.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
-	flag.IntVar(&c.ClearBuilds, "clear-builds-interval", 86400, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
+	flag.IntVar(&c.ClearBuilds, "clear-builds-interval", 345600, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
 
 	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")
@@ -135,6 +132,8 @@ func (c Config) HTTPSAddress() string {
 func (c *Config) AcceptTOS(tosURL string) bool {
 	if c.ACMEAcceptTOS {
 		c.acmeTOSURL = "Accepting ACME Terms of Service at: " + tosURL
+	} else {
+		c.acmeTOSURL = "Terms of Service are not accepted"
 	}
 	return c.ACMEAcceptTOS
 }

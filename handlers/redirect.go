@@ -14,7 +14,12 @@ func RedirectHandler(port int) http.HandlerFunc {
 			host = r.Host
 		}
 
-		targetURL := "https://" + host + ":" + strconv.Itoa(port) + r.URL.RequestURI()
+		portStr := ""
+		if port != 443 {
+			portStr = ":" + strconv.Itoa(port)
+		}
+
+		targetURL := "https://" + host + portStr + r.URL.RequestURI()
 
 		http.Redirect(w, r, targetURL, http.StatusMovedPermanently)
 	}
