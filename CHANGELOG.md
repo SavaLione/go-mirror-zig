@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - Fixed weird behavior of temporary files (windows and unix handle them differently). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
 - Added a message indicating that the ToS are not accepted
+- Removed version string from `internal/config/config.go` (it wasn't used)
 
 ### Changed
 - Increased the interval in seconds to clean up cached dev builds (from 1 day to 4 days)
