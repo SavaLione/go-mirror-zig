@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"embed"
 	"errors"
+	"flag"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -54,7 +55,7 @@ func run() error {
 		return fmt.Errorf("error parsing templates: %w", err)
 	}
 
-	cfg, err := config.ParseConfig()
+	cfg, err := config.ParseConfig(os.Args[1:], flag.ExitOnError)
 	if err != nil {
 		return fmt.Errorf("error parsing configuration: %w", err)
 	}

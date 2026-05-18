@@ -1,7 +1,7 @@
 # Go Mirror Zig
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Go Report Card](https://goreportcard.com/badge/github.com/savalione/go-mirror-zig)](https://goreportcard.com/report/github.com/savalione/go-mirror-zig) ![Go Version](https://img.shields.io/badge/go-1.26+-blue.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/savalione/go-mirror-zig) ![GitHub issues](https://img.shields.io/github/issues/savalione/go-mirror-zig)
 
-A self-hostable solution written in Go for creating a community mirror for the Zig programming language.
+A self-hostable solution written in Go for creating a community mirror for the Zig programming language ([Zig Programming Language](https://ziglang.org/)).
 This application is designed for communities, companies, or individuals looking to provide faster local access to Zig toolchains, reducing latency and bandwidth usage on the official servers.
 
 It is lightweight and distributed as a single binary.
@@ -124,7 +124,7 @@ Run `./go-mirror-zig -help` to see all available options.
 |`-version`              |Print version information and exit.                                                           |                     |
 |`-show-index-page bool` |Whether to serve a custom index page at the root (/). Set to false to disable.                |`true`               |
 |`-index-page string`    |Path to a directory containing static files for the index. If empty, the default page is used.|built-in index page  |
-|`-clear-builds-interval`|Interval in seconds to clean up cached dev builds. Set to 0 to disable.                       |`345600`             |
+|`-clear-builds-interval`|Interval in seconds to clean up cached dev builds. Set to 0 to disable.                       |`86400`              |
 
 ## Deployment
 ### Using systemd and nginx as a reverse proxy
@@ -227,5 +227,5 @@ Copyright (C) 2025 Savelii Pototskii (savalione.com)
 This project incorporates code from several third-party libraries and assets.
 We are grateful to their developers and maintainers.
 * [new.css](https://github.com/xz/new.css) - MIT License
-* [Official Zig Project Logo](https://github.com/ziglang/logo) - CC BY-SA 4.0
+* [Official Zig Project Logo](https://codeberg.org/ziglang/logo) - CC BY-SA 4.0
 * [The Inter font family](https://github.com/rsms/inter) - OFL-1.1 License
