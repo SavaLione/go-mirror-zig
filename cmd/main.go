@@ -13,6 +13,8 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -65,6 +67,13 @@ func run() error {
 			print(version)
 		} else {
 			print("unknown")
+		}
+		os.Exit(0)
+	}
+
+	if cfg.ShowPossibleSize {
+		if err := showPossibleSize(shutdownCtx, cfg); err != nil {
+			return err
 		}
 		os.Exit(0)
 	}
@@ -241,4 +250,86 @@ func startServer(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
 	if err := srv.Shutdown(shutdownTimeoutCtx); err != nil {
 		slog.Error(fmt.Sprintf("failed to shut down %s server gracefully", serverType), "addr", srv.Addr, "error", err)
 	}
+}
+
+func showPossibleSize(ctx context.Context, cfg config.Config) error {
+	zr, err := zig.FetchAllReleases(ctx, cfg.UpstreamURL+"/download/index.json")
+	if err != nil {
+		return fmt.Errorf("error fetching the index.json with all Zig releases: %w", err)
+	}
+
+	// Information about Zig releases
+	type CacheStats struct {
+		TotalReleases     int
+		TotalArtifacts    int
+		TotalSizeBytes    int64
+		DevSizeBytes      int64
+		MedianReleaseSize int64
+	}
+
+	// Size and release metrics from the index.json
+	calculateStats := func(zr zig.ZigReleases) CacheStats {
+		var stats CacheStats
+		var releaseSizes []int64
+
+		stats.TotalReleases = len(zr)
+
+		for version, release := range zr {
+			var currentReleaseSize int64
+			for _, artifact := range release.Platforms {
+				sizeBytes, err := strconv.ParseInt(artifact.Size, 10, 64)
+				if err != nil {
+					continue
+				}
+				currentReleaseSize += sizeBytes
+				stats.TotalArtifacts++
+			}
+
+			stats.TotalSizeBytes += currentReleaseSize
+			releaseSizes = append(releaseSizes, currentReleaseSize)
+
+			if version == "master" {
+				stats.DevSizeBytes += currentReleaseSize
+			}
+		}
+
+		// Median size of a release
+		if len(releaseSizes) > 0 {
+			sort.Slice(releaseSizes, func(i, j int) bool { return releaseSizes[i] < releaseSizes[j] })
+			mid := len(releaseSizes) / 2
+
+			if len(releaseSizes)%2 == 0 {
+				stats.MedianReleaseSize = (releaseSizes[mid-1] + releaseSizes[mid]) / 2
+			} else {
+				stats.MedianReleaseSize = releaseSizes[mid]
+			}
+		}
+
+		return stats
+	}
+
+	formatBytes := func(b int64) string {
+		const unit = 1024
+		if b < unit {
+			return fmt.Sprintf("%d B", b)
+		}
+		div, exp := int64(unit), 0
+		for n := b / unit; n >= unit; n /= unit {
+			div *= unit
+			exp++
+		}
+		return fmt.Sprintf("%.2f %cB", float64(b)/float64(div), "KMGTPE"[exp])
+	}
+
+	stats := calculateStats(zr)
+
+	fmt.Println("Zig artifacts cache estimation")
+	fmt.Printf("Upstream URL:          %s\n", cfg.UpstreamURL+"/download/index.json")
+	fmt.Printf("Total releases:        %d\n", stats.TotalReleases)
+	fmt.Printf("Total artifacts:       %d\n", stats.TotalArtifacts)
+	fmt.Printf("Total possible size:   %s (%d bytes)\n", formatBytes(stats.TotalSizeBytes), stats.TotalSizeBytes)
+	fmt.Printf("Size of master branch: %s\n", formatBytes(stats.DevSizeBytes))
+	fmt.Printf("Median release size:   %s\n", formatBytes(stats.MedianReleaseSize))
+
+	return nil
 }

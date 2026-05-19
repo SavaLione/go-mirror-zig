@@ -122,6 +122,7 @@ Run `./go-mirror-zig -help` to see all available options.
 |`-tls-port int`         |The port for the secure TLS (HTTPS) listener.                                                 |`443`                |
 |`-upstream-url string`  |The URL of the upstream server to mirror/proxy.                                               |`https://ziglang.org`|
 |`-version`              |Print version information and exit.                                                           |                     |
+|`-show-possible-size`   |Print estimation stats of all cacheable upstream artifacts (size, release counts) and exit.   |                     |
 |`-show-index-page bool` |Whether to serve a custom index page at the root (/). Set to false to disable.                |`true`               |
 |`-index-page string`    |Path to a directory containing static files for the index. If empty, the default page is used.|built-in index page  |
 |`-clear-builds-interval`|Interval in seconds to clean up cached dev builds. Set to 0 to disable.                       |`86400`              |

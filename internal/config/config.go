@@ -12,17 +12,18 @@ import (
 
 // Config holds configuration values, populated from command-line flags.
 type Config struct {
-	CacheDir        string
-	UpstreamURL     string
-	HTTPPort        int
-	TLSPort         int
-	ListenAddress   string
-	EnableTLS       bool
-	RedirectToHTTPS bool
-	ShowVersion     bool
-	ShowIndexPage   bool
-	IndexPage       string
-	ClearBuilds     int
+	CacheDir         string
+	UpstreamURL      string
+	HTTPPort         int
+	TLSPort          int
+	ListenAddress    string
+	EnableTLS        bool
+	RedirectToHTTPS  bool
+	ShowVersion      bool
+	ShowPossibleSize bool
+	ShowIndexPage    bool
+	IndexPage        string
+	ClearBuilds      int
 
 	ACME          bool
 	ACMEDirectory string
@@ -60,9 +61,10 @@ func ParseConfig(args []string, errorHandling flag.ErrorHandling) (Config, error
 	fs.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
 	fs.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
 	fs.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
+	fs.BoolVar(&c.ShowPossibleSize, "show-possible-size", false, "Print estimation stats of all cacheable upstream artifacts (size, release counts) and exit.")
 	fs.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
 	fs.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
-	fs.IntVar(&c.ClearBuilds, "clear-builds-interval", 345600, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
+	fs.IntVar(&c.ClearBuilds, "clear-builds-interval", 86400, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
 
 	fs.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
 	fs.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")

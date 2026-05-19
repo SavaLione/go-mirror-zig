@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added Zig Programming Language link to the top section of readme
 - Added functionality to fetch and process the `index.json` (Zig releases in JSON format)
 - Added function to calculate the total size of all Zig artifacts that can be downloaded from the official servers and cached
+- Added `-estimate-cache-size` flag to display upstream artifact statistics
 
 ### Fixed
 - Fixed weird behavior of temporary files (windows and unix handle them differently). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
