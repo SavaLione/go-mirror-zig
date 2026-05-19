@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.6] - 2026-05-19
+### Added
+- Added test suites for the index, middleware, redirect, and configuration parser handlers.
+- Added unit tests for Zig internal logic in `internal/zig/zig.go`.
+- Added a deployment subsection to the README for using Nginx as a reverse proxy.
+- Added a direct link to the Zig Programming Language website in the README header.
+- Added functionality to fetch and parse the upstream `index.json` for release processing.
+- Added a function to calculate the total cacheable size of all upstream Zig artifacts.
+- Added the `-show-possible-size` flag to display upstream artifact statistics (total size, release counts, and median sizes) before exiting.
+- Added intelligent periodic cache cleanup that cross-references the local cache with the upstream `index.json` to preserve active `master` builds while removing stale ones.
+- Added aggregate logging for the cleanup task, reporting the total number of files removed and space reclaimed (in bytes).
+- Added new targets to the build script:
+    - `linux/riscv64`
+    - `linux/386`
+    - `linux/ppc64le`
+    - `linux/loong64`
+    - `windows/arm64`
+    - `freebsd/amd64`
+    - `freebsd/arm64`
+    - `netbsd/amd64`
+    - `netbsd/arm64`
+    - `openbsd/amd64`
+    - `openbsd/arm64`
+
+
+### Fixed
+- Fixed inconsistent behavior of temporary files across platforms (Windows vs. Linux file locking). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
+- Added a warning message when ACME Terms of Service are not explicitly accepted.
+- Removed an unused version string from the `config` package.
+- Corrected the documentation regarding the default interval for cleaning up cached dev builds.
+- Fixed grammar in the changelog.
+
+### Changed
+- Replaced GitHub links with Codeberg links for the official Zig main repository.
+- The HTTP to HTTPS redirect now omits the `443` port if it's not required
+- Reduced the interval in seconds to clean up cached dev builds (from 1 day to 2 hours), thanks to the intelligent periodic cache cleanup feature.
+- Updated table driven tests for artifact regex matching.
+- Improved the configuration parser tests.
+- Updated readme.
+
 ## [1.1.0] - 2026-03-14
 ### Added
 - Added `-show-index-page` and `-index-page` flags to allow users to customize or disable the root index page.

@@ -11,11 +11,29 @@ mkdir -p release
 
 # Target platforms.
 PLATFORMS=(
+    # Linux
     "linux/amd64"
     "linux/arm64"
+    "linux/riscv64"
+    "linux/386"
+    "linux/ppc64le"
+    "linux/loong64"
+
+    # Windows
     "windows/amd64"
+    "windows/arm64"
+
+    # macOS
     "darwin/amd64"
     "darwin/arm64"
+
+    # BSD
+    "freebsd/amd64"
+    "freebsd/arm64"
+    "netbsd/amd64"
+    "netbsd/arm64"
+    "openbsd/amd64"
+    "openbsd/arm64"
 )
 
 echo "Building release artifacts for version ${VERSION}..."

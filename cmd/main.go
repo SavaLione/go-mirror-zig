@@ -5,13 +5,17 @@ import (
 	"crypto/tls"
 	"embed"
 	"errors"
+	"flag"
 	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -54,7 +58,7 @@ func run() error {
 		return fmt.Errorf("error parsing templates: %w", err)
 	}
 
-	cfg, err := config.ParseConfig()
+	cfg, err := config.ParseConfig(os.Args[1:], flag.ExitOnError)
 	if err != nil {
 		return fmt.Errorf("error parsing configuration: %w", err)
 	}
@@ -64,6 +68,13 @@ func run() error {
 			print(version)
 		} else {
 			print("unknown")
+		}
+		os.Exit(0)
+	}
+
+	if cfg.ShowPossibleSize {
+		if err := showPossibleSize(shutdownCtx, cfg); err != nil {
+			return err
 		}
 		os.Exit(0)
 	}
@@ -79,27 +90,68 @@ func run() error {
 				case <-shutdownCtx.Done():
 					return
 				case <-clearBuildsTicker.C:
+					// Attempt to fetch index.json
+					ctx, cancel := context.WithTimeout(shutdownCtx, 30*time.Second)
+					zr, err := zig.FetchAllReleases(ctx, cfg.UpstreamURL+"/download/index.json")
+					cancel()
+
+					activeMasterBuilds := make(map[string]bool)
+					fetchSuccess := err == nil
+
+					if fetchSuccess {
+						if master, ok := zr["master"]; ok {
+							for _, art := range master.Platforms {
+								filename := path.Base(art.Tarball)
+								activeMasterBuilds[filename] = true
+							}
+						}
+					} else {
+						slog.Warn("failed to fetch index.json for cleanup, falling back to clearing all dev builds", "error", err)
+					}
+
 					buildPath := filepath.Join(cfg.CacheDir, "/builds/")
 					buildFiles, err := os.ReadDir(buildPath)
 					if err != nil {
-						slog.Error("failed to scan cache directory for cleanup", "path", buildPath, "error", err)
+						// For some reason the directory hasn't been created yet
+						if !os.IsNotExist(err) {
+							slog.Error("failed to scan cache directory for cleanup", "path", buildPath, "error", err)
+						}
+
 						continue
 					}
 
+					var removedCount int
+					var removedBytes int64
+
 					for _, file := range buildFiles {
-						// Skip empty directories
-						if file.IsDir() {
+						// Skip empty directories and everything but artifacts
+						if file.IsDir() || !zig.IsZigArtifact(file.Name()) {
 							continue
 						}
 
-						if zig.IsZigArtifact(file.Name()) {
-							filePath := filepath.Join(buildPath, file.Name())
-							if err := os.Remove(filePath); err != nil {
-								slog.Error("failed to remove a stale zig artifact", "path", filePath, "error", err)
-							} else {
-								slog.Info("a stale zig artifact removed", "path", filePath)
-							}
+						// Current dev build
+						if fetchSuccess && activeMasterBuilds[file.Name()] {
+							continue
 						}
+
+						filePath := filepath.Join(buildPath, file.Name())
+
+						// For stats
+						var fileSize int64
+						if info, err := file.Info(); err == nil {
+							fileSize = info.Size()
+						}
+
+						if err := os.Remove(filePath); err != nil {
+							slog.Error("failed to remove a stale zig artifact", "path", filePath, "error", err)
+						} else {
+							removedCount++
+							removedBytes += fileSize
+						}
+					}
+
+					if removedCount > 0 {
+						slog.Info("stale zig builds cleanup completed", "removed_count", removedCount, "reclaimed_space", removedBytes)
 					}
 				}
 			}
@@ -240,4 +292,86 @@ func startServer(ctx context.Context, wg *sync.WaitGroup, srv *http.Server) {
 	if err := srv.Shutdown(shutdownTimeoutCtx); err != nil {
 		slog.Error(fmt.Sprintf("failed to shut down %s server gracefully", serverType), "addr", srv.Addr, "error", err)
 	}
+}
+
+func showPossibleSize(ctx context.Context, cfg config.Config) error {
+	zr, err := zig.FetchAllReleases(ctx, cfg.UpstreamURL+"/download/index.json")
+	if err != nil {
+		return fmt.Errorf("error fetching the index.json with all Zig releases: %w", err)
+	}
+
+	// Information about Zig releases
+	type CacheStats struct {
+		TotalReleases     int
+		TotalArtifacts    int
+		TotalSizeBytes    int64
+		DevSizeBytes      int64
+		MedianReleaseSize int64
+	}
+
+	// Size and release metrics from the index.json
+	calculateStats := func(zr zig.ZigReleases) CacheStats {
+		var stats CacheStats
+		var releaseSizes []int64
+
+		stats.TotalReleases = len(zr)
+
+		for version, release := range zr {
+			var currentReleaseSize int64
+			for _, artifact := range release.Platforms {
+				sizeBytes, err := strconv.ParseInt(artifact.Size, 10, 64)
+				if err != nil {
+					continue
+				}
+				currentReleaseSize += sizeBytes
+				stats.TotalArtifacts++
+			}
+
+			stats.TotalSizeBytes += currentReleaseSize
+			releaseSizes = append(releaseSizes, currentReleaseSize)
+
+			if version == "master" {
+				stats.DevSizeBytes += currentReleaseSize
+			}
+		}
+
+		// Median size of a release
+		if len(releaseSizes) > 0 {
+			sort.Slice(releaseSizes, func(i, j int) bool { return releaseSizes[i] < releaseSizes[j] })
+			mid := len(releaseSizes) / 2
+
+			if len(releaseSizes)%2 == 0 {
+				stats.MedianReleaseSize = (releaseSizes[mid-1] + releaseSizes[mid]) / 2
+			} else {
+				stats.MedianReleaseSize = releaseSizes[mid]
+			}
+		}
+
+		return stats
+	}
+
+	formatBytes := func(b int64) string {
+		const unit = 1024
+		if b < unit {
+			return fmt.Sprintf("%d B", b)
+		}
+		div, exp := int64(unit), 0
+		for n := b / unit; n >= unit; n /= unit {
+			div *= unit
+			exp++
+		}
+		return fmt.Sprintf("%.2f %cB", float64(b)/float64(div), "KMGTPE"[exp])
+	}
+
+	stats := calculateStats(zr)
+
+	fmt.Println("Zig artifacts cache estimation")
+	fmt.Printf("Upstream URL:          %s\n", cfg.UpstreamURL+"/download/index.json")
+	fmt.Printf("Total releases:        %d\n", stats.TotalReleases)
+	fmt.Printf("Total artifacts:       %d\n", stats.TotalArtifacts)
+	fmt.Printf("Total possible size:   %s (%d bytes)\n", formatBytes(stats.TotalSizeBytes), stats.TotalSizeBytes)
+	fmt.Printf("Size of master branch: %s\n", formatBytes(stats.DevSizeBytes))
+	fmt.Printf("Median release size:   %s\n", formatBytes(stats.MedianReleaseSize))
+
+	return nil
 }

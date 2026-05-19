@@ -5,26 +5,25 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 )
 
-// MUST BE SET by go build -ldflags "-X main.version=999"
-var version string // git describe --tags --always --dirty
-
 // Config holds configuration values, populated from command-line flags.
 type Config struct {
-	CacheDir        string
-	UpstreamURL     string
-	HTTPPort        int
-	TLSPort         int
-	ListenAddress   string
-	EnableTLS       bool
-	RedirectToHTTPS bool
-	ShowVersion     bool
-	ShowIndexPage   bool
-	IndexPage       string
-	ClearBuilds     int
+	CacheDir         string
+	UpstreamURL      string
+	HTTPPort         int
+	TLSPort          int
+	ListenAddress    string
+	EnableTLS        bool
+	RedirectToHTTPS  bool
+	ShowVersion      bool
+	ShowPossibleSize bool
+	ShowIndexPage    bool
+	IndexPage        string
+	ClearBuilds      int
 
 	ACME          bool
 	ACMEDirectory string
@@ -43,31 +42,41 @@ type Config struct {
 }
 
 // ParseConfig defines and parses command-line flags, validates them, and returns a populated Config struct.
-func ParseConfig() (Config, error) {
+func ParseConfig(args []string, errorHandling flag.ErrorHandling) (Config, error) {
 	var c Config
 
-	flag.StringVar(&c.CacheDir, "cache-dir", "./", "Path to the directory where downloaded content will be cached.")
-	flag.StringVar(&c.UpstreamURL, "upstream-url", "https://ziglang.org", "The URL of the upstream server to mirror/proxy.")
-	flag.IntVar(&c.HTTPPort, "http-port", 80, "The port for the plain HTTP listener.")
-	flag.IntVar(&c.TLSPort, "tls-port", 443, "The port for the secure TLS (HTTPS) listener.")
-	flag.StringVar(&c.ListenAddress, "listen-address", "", "The IP address to listen on. If empty, listens on all available interfaces.")
-	flag.BoolVar(&c.EnableTLS, "enable-tls", false, "Enable the TLS (HTTPS) server. Requires -tls-cert-file and -tls-key-file.")
-	flag.StringVar(&c.tlsCertFile, "tls-cert-file", "", "Path to the TLS certificate file.")
-	flag.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
-	flag.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
-	flag.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
-	flag.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
-	flag.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
-	flag.IntVar(&c.ClearBuilds, "clear-builds-interval", 86400, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
+	fs := flag.NewFlagSet("go-mirror-zig", errorHandling)
 
-	flag.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
-	flag.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")
-	flag.BoolVar(&c.ACMEAcceptTOS, "acme-accept-tos", false, "Accept the ACME provider's Terms of Service.")
-	flag.StringVar(&c.ACMECache, "acme-cache", "", "Directory for storing obtained certificates.")
-	flag.StringVar(&c.ACMEEmail, "acme-email", "", "Email address for ACME registration and recovery notices.")
-	flag.StringVar(&c.ACMEHost, "acme-host", "", "The hostname (domain name) for which to obtain the ACME certificate.")
+	if errorHandling == flag.ContinueOnError {
+		fs.SetOutput(io.Discard) // suppress console text on tests
+	}
 
-	flag.Parse()
+	fs.StringVar(&c.CacheDir, "cache-dir", "./", "Path to the directory where downloaded content will be cached.")
+	fs.StringVar(&c.UpstreamURL, "upstream-url", "https://ziglang.org", "The URL of the upstream server to mirror/proxy.")
+	fs.IntVar(&c.HTTPPort, "http-port", 80, "The port for the plain HTTP listener.")
+	fs.IntVar(&c.TLSPort, "tls-port", 443, "The port for the secure TLS (HTTPS) listener.")
+	fs.StringVar(&c.ListenAddress, "listen-address", "", "The IP address to listen on. If empty, listens on all available interfaces.")
+	fs.BoolVar(&c.EnableTLS, "enable-tls", false, "Enable the TLS (HTTPS) server. Requires -tls-cert-file and -tls-key-file.")
+	fs.StringVar(&c.tlsCertFile, "tls-cert-file", "", "Path to the TLS certificate file.")
+	fs.StringVar(&c.tlsKeyFile, "tls-key-file", "", "Path to the TLS private key file.")
+	fs.BoolVar(&c.RedirectToHTTPS, "redirect-to-https", false, "Enable automatic redirection of HTTP requests to HTTPS. Requires -enable-tls or -acme.")
+	fs.BoolVar(&c.ShowVersion, "version", false, "Print version information and exit.")
+	fs.BoolVar(&c.ShowPossibleSize, "show-possible-size", false, "Print estimation stats of all cacheable upstream artifacts (size, release counts) and exit.")
+	fs.BoolVar(&c.ShowIndexPage, "show-index-page", true, "Whether to serve a custom index page at the root (/). Set to false to disable.")
+	fs.StringVar(&c.IndexPage, "index-page", "", "Path to a directory containing static files to serve as the root index. If empty, uses the default built-in index page.")
+	fs.IntVar(&c.ClearBuilds, "clear-builds-interval", 7200, "Interval in seconds to clean up cached dev builds. Set to 0 to disable.")
+
+	fs.BoolVar(&c.ACME, "acme", false, "Obtain TLS certificates using the ACME challenge.")
+	fs.StringVar(&c.ACMEDirectory, "acme-directory", "https://acme-v02.api.letsencrypt.org/directory", "ACME directory URL.")
+	fs.BoolVar(&c.ACMEAcceptTOS, "acme-accept-tos", false, "Accept the ACME provider's Terms of Service.")
+	fs.StringVar(&c.ACMECache, "acme-cache", "", "Directory for storing obtained certificates.")
+	fs.StringVar(&c.ACMEEmail, "acme-email", "", "Email address for ACME registration and recovery notices.")
+	fs.StringVar(&c.ACMEHost, "acme-host", "", "The hostname (domain name) for which to obtain the ACME certificate.")
+
+	err := fs.Parse(args)
+	if err != nil {
+		return c, err
+	}
 
 	if c.EnableTLS && c.ACME {
 		return c, errors.New("cannot use both -enable-tls (manual certificates) and -acme (automatic certificates) at the same time")
@@ -135,6 +144,8 @@ func (c Config) HTTPSAddress() string {
 func (c *Config) AcceptTOS(tosURL string) bool {
 	if c.ACMEAcceptTOS {
 		c.acmeTOSURL = "Accepting ACME Terms of Service at: " + tosURL
+	} else {
+		c.acmeTOSURL = "Terms of Service are not accepted"
 	}
 	return c.ACMEAcceptTOS
 }
