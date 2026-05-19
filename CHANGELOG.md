@@ -6,33 +6,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
-- Added tests for the index handler
-- Added tests for the middleware handler
-- Added tests for the redirect handler
-- Added tests for the configuration parser
-- Added tests for the zig internal functions (`internal/zig/zig.go`)
-- Added a new deployment subsection to the readme (using nginx as a proxy)
-- Added Zig Programming Language link to the top section of readme
-- Added functionality to fetch and process the `index.json` (Zig releases in JSON format)
-- Added function to calculate the total size of all Zig artifacts that can be downloaded from the official servers and cached
-- Added `-estimate-cache-size` flag to display upstream artifact statistics
+- Added test suites for the index, middleware, redirect, and configuration parser handlers.
+- Added unit tests for Zig internal logic in `internal/zig/zig.go`.
+- Added a deployment subsection to the README for using Nginx as a reverse proxy.
+- Added a direct link to the Zig Programming Language website in the README header.
+- Added functionality to fetch and parse the upstream `index.json` for release processing.
+- Added a function to calculate the total cacheable size of all upstream Zig artifacts.
+- Added the `-show-possible-size` flag to display upstream artifact statistics (total size, release counts, and median sizes) before exiting.
+- Added intelligent periodic cache cleanup that cross-references the local cache with the upstream `index.json` to preserve active `master` builds while removing stale ones.
+- Added aggregate logging for the cleanup task, reporting the total number of files removed and space reclaimed (in bytes).
+- Added new targets to the build script:
+    - `linux/riscv64`
+    - `linux/386`
+    - `linux/ppc64le`
+    - `linux/loong64`
+    - `windows/arm64`
+    - `freebsd/amd64`
+    - `freebsd/arm64`
+    - `netbsd/amd64`
+    - `netbsd/arm64`
+    - `openbsd/amd64`
+    - `openbsd/arm64`
+
 
 ### Fixed
-- Fixed weird behavior of temporary files (windows and unix handle them differently). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
-- Added a message indicating that the ToS are not accepted
-- Removed version string from `internal/config/config.go` (it wasn't used)
-- Fixed readme information about the interval in seconds to clean up cached dev builds
+- Fixed inconsistent behavior of temporary files across platforms (Windows vs. Linux file locking). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
+- Added a warning message when ACME Terms of Service are not explicitly accepted.
+- Removed an unused version string from the `config` package.
+- Corrected the documentation regarding the default interval for cleaning up cached dev builds.
+- Fixed grammar in the changelog.
 
 ### Changed
-- Increased the interval in seconds to clean up cached dev builds (from 1 day to 2 days)
-- Reduced the interval in seconds to clean up cached dev builds (from 2 days to 1 day)
-    - Reverting the previous change.
-        Sometimes it takes ~4 days to release a new artifact, sometimes ~2 hours.
-        Instead of relying simply on periodic cache cleanup, a better approach will be implemented.
+- Replaced GitHub links with Codeberg links for the official Zig main repository.
 - The HTTP to HTTPS redirect now omits the `443` port if it's not required
-- Replaced links to the Zig main repository (GitHub -> Codeberg)
-- Updated table driven tests that test regexp (`internal/zig/zig_test.go`)
-- Tests for the configuration parser now can test the parser itself
+- Reduced the interval in seconds to clean up cached dev builds (from 1 day to 2 hours), thanks to the intelligent periodic cache cleanup feature.
+- Updated table driven tests for artifact regex matching.
+- Improved the configuration parser tests.
+- Updated readme.
 
 ## [1.1.0] - 2026-03-14
 ### Added

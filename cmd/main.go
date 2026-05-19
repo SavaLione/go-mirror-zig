@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -89,27 +90,68 @@ func run() error {
 				case <-shutdownCtx.Done():
 					return
 				case <-clearBuildsTicker.C:
+					// Attempt to fetch index.json
+					ctx, cancel := context.WithTimeout(shutdownCtx, 30*time.Second)
+					zr, err := zig.FetchAllReleases(ctx, cfg.UpstreamURL+"/download/index.json")
+					cancel()
+
+					activeMasterBuilds := make(map[string]bool)
+					fetchSuccess := err == nil
+
+					if fetchSuccess {
+						if master, ok := zr["master"]; ok {
+							for _, art := range master.Platforms {
+								filename := path.Base(art.Tarball)
+								activeMasterBuilds[filename] = true
+							}
+						}
+					} else {
+						slog.Warn("failed to fetch index.json for cleanup, falling back to clearing all dev builds", "error", err)
+					}
+
 					buildPath := filepath.Join(cfg.CacheDir, "/builds/")
 					buildFiles, err := os.ReadDir(buildPath)
 					if err != nil {
-						slog.Error("failed to scan cache directory for cleanup", "path", buildPath, "error", err)
+						// For some reason the directory hasn't been created yet
+						if !os.IsNotExist(err) {
+							slog.Error("failed to scan cache directory for cleanup", "path", buildPath, "error", err)
+						}
+
 						continue
 					}
 
+					var removedCount int
+					var removedBytes int64
+
 					for _, file := range buildFiles {
-						// Skip empty directories
-						if file.IsDir() {
+						// Skip empty directories and everything but artifacts
+						if file.IsDir() || !zig.IsZigArtifact(file.Name()) {
 							continue
 						}
 
-						if zig.IsZigArtifact(file.Name()) {
-							filePath := filepath.Join(buildPath, file.Name())
-							if err := os.Remove(filePath); err != nil {
-								slog.Error("failed to remove a stale zig artifact", "path", filePath, "error", err)
-							} else {
-								slog.Info("a stale zig artifact removed", "path", filePath)
-							}
+						// Current dev build
+						if fetchSuccess && activeMasterBuilds[file.Name()] {
+							continue
 						}
+
+						filePath := filepath.Join(buildPath, file.Name())
+
+						// For stats
+						var fileSize int64
+						if info, err := file.Info(); err == nil {
+							fileSize = info.Size()
+						}
+
+						if err := os.Remove(filePath); err != nil {
+							slog.Error("failed to remove a stale zig artifact", "path", filePath, "error", err)
+						} else {
+							removedCount++
+							removedBytes += fileSize
+						}
+					}
+
+					if removedCount > 0 {
+						slog.Info("stale zig builds cleanup completed", "removed_count", removedCount, "reclaimed_space", removedBytes)
 					}
 				}
 			}
