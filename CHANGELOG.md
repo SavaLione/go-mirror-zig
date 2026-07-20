@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Security
+- Updated the `golang.org/x/crypto` library (`v0.49.0` -> `v0.54.0`) (thanks Dependabot for that)
+- Updated the `golang.org/x/net` library (`v0.52.0` -> `v0.57.0`)
+- Updated the `golang.org/x/text` library (`v0.35.0` -> `v0.40.0`)
+
 ## [1.2.6] - 2026-05-19
 ### Added
 - Added test suites for the index, middleware, redirect, and configuration parser handlers.
@@ -27,7 +33,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - `netbsd/arm64`
     - `openbsd/amd64`
     - `openbsd/arm64`
-
 
 ### Fixed
 - Fixed inconsistent behavior of temporary files across platforms (Windows vs. Linux file locking). On Linux it is allowed to delete an opened file, while on Windows it is not allowed
