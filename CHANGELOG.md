@@ -10,6 +10,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Updated the `golang.org/x/net` library (`v0.52.0` -> `v0.57.0`)
 - Updated the `golang.org/x/text` library (`v0.35.0` -> `v0.40.0`)
 
+### Changed
+- Removed the Go Report Card badge from the readme (the Go Report Card project was retired)
+- Changed some text in the readme.
+
 ## [1.2.6] - 2026-05-19
 ### Added
 - Added test suites for the index, middleware, redirect, and configuration parser handlers.
