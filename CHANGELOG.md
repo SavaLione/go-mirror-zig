@@ -11,6 +11,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Updated the `golang.org/x/net` library (`v0.57.0` -> `v0.60.0`)
 - Updated the `golang.org/x/text` library (`v0.40.0` -> `v0.42.0`)
 
+### Changed
+- Updated required Go version in readme
+
 ## [1.2.7] - 2026-07-20
 ### Security
 - Updated the `golang.org/x/crypto` library (`v0.49.0` -> `v0.54.0`) (thanks Dependabot for that)
