@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.8] - 2026-10-09
 ### Security
 - Updated Go version (`1.26.5` - `1.27.2`)
 - Updated the `golang.org/x/crypto` library (`v0.54.0` -> `v0.57.0`)
