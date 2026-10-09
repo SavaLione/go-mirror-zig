@@ -1,5 +1,5 @@
 # Go Mirror Zig
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Go Version](https://img.shields.io/badge/go-1.26+-blue.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/savalione/go-mirror-zig) ![GitHub issues](https://img.shields.io/github/issues/savalione/go-mirror-zig)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Go Version](https://img.shields.io/badge/go-1.27+-blue.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/savalione/go-mirror-zig) ![GitHub issues](https://img.shields.io/github/issues/savalione/go-mirror-zig)
 
 A self-hostable solution written in Go for creating a community mirror for the Zig programming language ([Zig Programming Language](https://ziglang.org/)).
 This application is designed for communities, companies, or individuals looking to provide faster local access to Zig toolchains, reducing latency and bandwidth usage on the official servers.
@@ -20,10 +20,10 @@ This is the recommended method for most users.
 
 Navigate to the [latest release page](https://github.com/savalione/go-mirror-zig/releases/latest).
 
-Download the archive for your operating system and architecture (e.g., `go-mirror-zig-v1.2.7-linux-amd64.tar.gz`).
+Download the archive for your operating system and architecture (e.g., `go-mirror-zig-v1.2.8-linux-amd64.tar.gz`).
 Extract the archive.
 ```sh
-tar -xvzf go-mirror-zig-v1.2.7-linux-amd64.tar.gz
+tar -xvzf go-mirror-zig-v1.2.8-linux-amd64.tar.gz
 ```
 
 Run the application. You can verify it's working by checking the version or help output.
