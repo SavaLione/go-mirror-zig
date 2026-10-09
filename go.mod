@@ -1,10 +1,10 @@
 module github.com/savalione/go-mirror-zig
 
-go 1.26.5
+go 1.27.2
 
-require golang.org/x/crypto v0.54.0
+require golang.org/x/crypto v0.57.0
 
 require (
-	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 )
