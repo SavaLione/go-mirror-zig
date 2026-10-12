@@ -181,6 +181,7 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 
 	// See: https://pkg.go.dev/os#example-CreateTemp-Suffix
 	// Also: On Linux it is allowed to delete an opened file, while on Windows it is not allowed
+	// It's expected behavior, see the first example in https://pkg.go.dev/os#CreateTemp
 	if err := tmpFile.Close(); err != nil {
 		logger.Error("failed to close the temporary file", "temp_file", tmpFile.Name(), "error", err)
 	}
@@ -200,6 +201,12 @@ func (c *Cache) fetchAndCacheFile(ctx context.Context, logger *slog.Logger, file
 
 		logger.Error("failed to rename temporary file", "from", tmpFile.Name(), "to", fileDestination, "error", err)
 		return err
+	}
+
+	// Set the file permissions to 664
+	// I believe 664 makes more sense than 644, but I'm open to reasons why it might not
+	if err := os.Chmod(fileDestination, 0664); err != nil {
+		logger.Error("failed to change the file permissions from 0600 to 0664", "filename", filename, "error", err)
 	}
 
 	logger.Info("successfully downloaded and cached file")

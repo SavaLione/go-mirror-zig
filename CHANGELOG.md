@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- Fixed file permissions for temp files that were renamed (`0600` -> `0664`, see #26)
+
 ## [1.2.8] - 2026-10-09
 ### Security
 - Updated Go version (`1.26.5` - `1.27.2`)
