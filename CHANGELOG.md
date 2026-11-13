@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 ### Fixed
 - Fixed file permissions for temp files that were renamed (`0600` -> `0664`, see #26)
+- Fixed artifact downloads being cut off after 10 seconds by raising the write timeout to 15 minutes (see #28)
 
 ## [1.2.8] - 2026-10-09
 ### Security
