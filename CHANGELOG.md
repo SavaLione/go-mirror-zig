@@ -9,6 +9,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Fixed file permissions for temp files that were renamed (`0600` -> `0664`, see #26)
 - Fixed artifact downloads being cut off after 10 seconds by raising the write timeout to 15 minutes (see #28)
 
+### Security
+- Updated Go version (`1.27.2` - `1.27.4`)
+- Updated the `golang.org/x/crypto` library (`v0.57.0` -> `v0.59.0`)
+- Updated the `golang.org/x/net` library (`v0.60.0` -> `v0.62.0`)
+- Updated the `golang.org/x/text` library (`v0.42.0` -> `v0.44.0`)
+
 ## [1.2.8] - 2026-10-09
 ### Security
 - Updated Go version (`1.26.5` - `1.27.2`)
