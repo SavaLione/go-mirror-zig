@@ -36,6 +36,12 @@ var content embed.FS
 //go:embed assets/*
 var assets embed.FS
 
+// WriteTimeout for the servers that serve artifacts. It covers the whole
+// response, including the upstream fetch on a cache miss, so it has to be long
+// enough to download the largest artifact (~105MB) over a slow connection:
+// 15 minutes needs ~0.93 Mbit/s.
+const artifactWriteTimeout = 15 * time.Minute
+
 func main() {
 	if err := run(); err != nil {
 		slog.Error("server exited with an error", "error", err)
@@ -193,7 +199,7 @@ func run() error {
 			Handler:      mainHandler,
 			TLSConfig:    tlsConfig,
 			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			WriteTimeout: artifactWriteTimeout,
 			IdleTimeout:  120 * time.Second,
 		}
 
@@ -211,7 +217,7 @@ func run() error {
 			Handler:      mainHandler,
 			TLSConfig:    acmeManager.TLSConfig(),
 			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			WriteTimeout: artifactWriteTimeout,
 			IdleTimeout:  120 * time.Second,
 		}
 
@@ -221,7 +227,7 @@ func run() error {
 			Addr:         cfg.HTTPAddress(),
 			Handler:      mainHandler,
 			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			WriteTimeout: artifactWriteTimeout,
 			IdleTimeout:  120 * time.Second,
 		}
 		servers = append(servers, httpServer)
